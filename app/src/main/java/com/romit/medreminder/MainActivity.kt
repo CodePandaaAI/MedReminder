@@ -62,8 +62,10 @@ fun AppNavigation() {
             composable(route = "home") {
                 HomeScreen(
                     modifier = Modifier.padding(innerPadding),
-                    onAddMedicineClicked = { navController.navigate()}
+                    onAddMedicineClicked = { navController.navigate("addMedicine")}
                 )
+            }
+            composable(route = "addMedicine") {
                 AddMedicineScreenPhase1(onFillNextDetailClicked = {})
             }
         }
