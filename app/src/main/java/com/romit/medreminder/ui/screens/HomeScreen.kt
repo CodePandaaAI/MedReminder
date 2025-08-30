@@ -46,7 +46,7 @@ fun HomeScreen(
                 modifier = Modifier.size(250.dp)
             )
             Text("No Reports Yet!")
-            Button(onClick = { onAddMedicineClicked }) {
+            Button(onClick = { onAddMedicineClicked() }) {
                 Text("Add Medicines")
             }
         } else {

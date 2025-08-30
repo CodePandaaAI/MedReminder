@@ -16,12 +16,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavHost
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.romit.medreminder.ui.screens.AddMedicineScreenPhase1
+import com.romit.medreminder.ui.screens.AddMedicineScreenPhaseFirst
 import com.romit.medreminder.ui.screens.HomeScreen
 import com.romit.medreminder.ui.theme.MedReminderTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,12 +41,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    var fabMenuExpanded by rememberSaveable { mutableStateOf(false) }
+
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             CenterAlignedTopAppBar(
@@ -53,20 +58,23 @@ fun AppNavigation() {
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = {}) {
+            FloatingActionButton(onClick = { navController.navigate("add_medicine_phase_first") }) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = null)
             }
         }
     ) { innerPadding ->
-        NavHost(navController, startDestination = "") {
+        NavHost(navController = navController, startDestination = "home") {
             composable(route = "home") {
                 HomeScreen(
                     modifier = Modifier.padding(innerPadding),
-                    onAddMedicineClicked = { navController.navigate("addMedicine")}
+                    onAddMedicineClicked = { navController.navigate("add_medicine_phase_first") }
                 )
             }
-            composable(route = "addMedicine") {
-                AddMedicineScreenPhase1(onFillNextDetailClicked = {})
+            composable(route = "add_medicine_phase_first") {
+                AddMedicineScreenPhaseFirst(modifier = Modifier.padding(innerPadding), onFillNextDetailClicked = {})
+            }
+            composable(route = "add_medicine_phase_final") {
+
             }
         }
     }
