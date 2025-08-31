@@ -136,8 +136,8 @@ fun AddMedicineScreenPhaseFirst(modifier: Modifier, onFillNextDetailClicked: () 
         }
         item {
             Surface(
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                shape = RoundedCornerShape(24.dp),
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                shape = RoundedCornerShape(28.dp),
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
                     .fillMaxWidth()
@@ -182,7 +182,7 @@ fun OptionsWithRadioAndText(
         color = MaterialTheme.colorScheme.surfaceContainer,
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier
-            .padding(horizontal = 24.dp)
+            .padding(horizontal = 28.dp)
             .fillMaxWidth()
             .selectable(
                 selected = selectedRadioButton,
