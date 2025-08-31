@@ -9,16 +9,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,128 +45,163 @@ fun AddMedicineScreenPhaseFirst(modifier: Modifier, onFillNextDetailClicked: () 
     var radioOnceDay by remember { mutableStateOf(false) }
     var radioTwiceDay by remember { mutableStateOf(false) }
     var radioCustom by remember { mutableStateOf(false) }
-    Column(
+    var sliderPosition by remember { mutableFloatStateOf(0f) }
+    LazyColumn(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painterResource(R.drawable.excited),
-            contentDescription = null,
-            modifier = Modifier
-                .size(192.dp)
-                .align(Alignment.CenterHorizontally)
-        )
-        Text(
-            "Let's Add Your Medicine!",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
-        Spacer(Modifier.height(16.dp))
-        Text(
-            "Whats The Medicine Name?",
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(horizontal = 24.dp)
-        )
-        OutlinedTextField(
-            value = medName,
-            onValueChange = { medName = it },
-            shape = RoundedCornerShape(8.dp),
-            label = { Text("Enter Medicine Name") },
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-        )
-        Spacer(Modifier.height(16.dp))
-        Text(
-            "Choose Daily Dosage!",
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.padding(horizontal = 24.dp)
-        )
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .fillMaxWidth()
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+        item {
+            Image(
+                painterResource(R.drawable.excited),
+                contentDescription = null,
                 modifier = Modifier
-                    .padding(16.dp)
-                    .selectable(
-                        selected = radioOnceDay,
-                        onClick = {
-                            radioOnceDay = true
-                            radioCustom = false
-                            radioTwiceDay = false
-                        },
-                        role = Role.RadioButton
-                    )
-            ) {
-                RadioButton(
-                    selected = radioOnceDay, onClick = null
+                    .fillMaxWidth()
+                    .size(128.dp)
+            )
+        }
+        item {
+            Text(
+                "Let's Add Your Medicine!",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.ExtraBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(16.dp))
+        }
+        item {
+            Text(
+                "Whats The Medicine Name?",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+        }
+        item {
+            OutlinedTextField(
+                value = medName,
+                onValueChange = { medName = it },
+                shape = RoundedCornerShape(8.dp),
+                label = { Text("Enter Medicine Name") },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+            )
+        }
+
+        item {
+            Text(
+                "Choose Daily Dosage!",
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Start,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+        }
+        item {
+            OptionsWithRadioAndText(radioOnceDay, onOptionClicked = {
+                radioOnceDay = true
+                radioCustom = false
+                radioTwiceDay = false
+                sliderPosition = 0f
+            }, "I eat it once a day!")
+        }
+        item {
+            OptionsWithRadioAndText(radioTwiceDay, onOptionClicked = {
+                radioOnceDay = false
+                radioCustom = false
+                radioTwiceDay = true
+                sliderPosition = 0f
+            }, "I eat it twice a day!")
+        }
+        item {
+            OptionsWithRadioAndText(radioCustom, onOptionClicked = {
+                radioOnceDay = false
+                radioCustom = true
+                radioTwiceDay = false
+            }, "Custom Dosage Amount")
+        }
+        if (radioCustom) {
+            item {
+                Slider(
+                    value = sliderPosition,
+                    onValueChange = { sliderPosition = it },
+                    valueRange = 0f..20f, // Define the range from 0 to 100,
+                    steps = 20,
+                    modifier = Modifier.padding(horizontal = 56.dp)
                 )
-                Text("I eat it once a day!")
+                Text(text = "Selected value: ${sliderPosition.toInt()}")
             }
         }
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .fillMaxWidth()
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
+        item {
+            Surface(
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = RoundedCornerShape(24.dp),
                 modifier = Modifier
-                    .padding(16.dp)
-                    .selectable(
-                        selected = radioTwiceDay,
-                        onClick = {
-                            radioOnceDay = false
-                            radioCustom = false
-                            radioTwiceDay = true
-                        },
-                        role = Role.RadioButton
-                    )
+                    .padding(horizontal = 24.dp)
+                    .fillMaxWidth()
             ) {
-                RadioButton(selected = radioTwiceDay, onClick = null)
-                Text("I eat it twice a day!")
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Medicine Name: $medName", fontWeight = FontWeight.Bold)
+                    Text(
+                        "Daily Dosage: ${
+                            when {
+                                radioCustom -> sliderPosition.toInt()
+                                radioOnceDay -> 1
+                                else -> 2
+                            }
+                        }"
+                    )
+                }
             }
         }
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainer,
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .fillMaxWidth()
-        ) {
+        item {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier
-                    .padding(16.dp)
-                    .selectable(
-                        selected = radioCustom,
-                        onClick = {
-                            radioOnceDay = false
-                            radioCustom = true
-                            radioTwiceDay = false
-                        },
-                        role = Role.RadioButton
-                    )
+                    .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                RadioButton(selected = radioCustom, onClick = null)
-                Text("Custom Dosage Amount")
+                OutlinedButton(onClick = {}, modifier = Modifier.height(72.dp).width(144.dp)) {
+                    Text("Cancel")
+                }
+                Button(onClick = {}, modifier = Modifier.height(72.dp).width(144.dp)) {
+                    Text("Next")
+                }
             }
+        }
+    }
+}
+
+@Composable
+fun OptionsWithRadioAndText(
+    selectedRadioButton: Boolean,
+    onOptionClicked: () -> Unit,
+    optionText: String
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier
+            .padding(horizontal = 24.dp)
+            .fillMaxWidth()
+            .selectable(
+                selected = selectedRadioButton,
+                onClick = {
+                    onOptionClicked()
+                },
+                role = Role.RadioButton
+            )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            RadioButton(
+                selected = selectedRadioButton, onClick = null
+            )
+            Text(optionText)
         }
     }
 }
