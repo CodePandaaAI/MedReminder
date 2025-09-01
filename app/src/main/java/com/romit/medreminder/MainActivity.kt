@@ -45,13 +45,17 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val title = when(currentRoute) {
+        "home" -> "MedReminder"
+        else -> "Add Medicine Details"
+    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text("MedReminder")
+                    Text(title)
                 }
             )
         },
