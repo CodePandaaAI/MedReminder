@@ -21,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.romit.medreminder.ui.screens.AddMedicinePhaseComplete
 import com.romit.medreminder.ui.screens.AddMedicineScreenPhaseFirst
 import com.romit.medreminder.ui.screens.HomeScreen
 import com.romit.medreminder.ui.theme.MedReminderTheme
@@ -45,7 +46,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    val title = when(currentRoute) {
+    val title = when (currentRoute) {
         "home" -> "MedReminder"
         else -> "Add Medicine Details"
     }
@@ -77,10 +78,12 @@ fun AppNavigation() {
             composable(route = "add_medicine_phase_first") {
                 AddMedicineScreenPhaseFirst(
                     modifier = Modifier.padding(innerPadding),
-                    onFillNextDetailClicked = {})
+                    onFillNextDetailClicked = { navController.navigate("add_medicine_phase_final") },
+                    onCancelClicked = { navController.popBackStack() }
+                )
             }
             composable(route = "add_medicine_phase_final") {
-
+                AddMedicinePhaseComplete(modifier = Modifier.padding(innerPadding))
             }
         }
     }

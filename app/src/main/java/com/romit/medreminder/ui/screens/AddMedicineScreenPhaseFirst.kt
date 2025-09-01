@@ -41,7 +41,8 @@ import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
 fun AddMedicineScreenPhaseFirst(
     viewModel: AddMedicineScreenViewModel = viewModel(),
     modifier: Modifier,
-    onFillNextDetailClicked: () -> Unit
+    onFillNextDetailClicked: () -> Unit,
+    onCancelClicked: () -> Unit
 ) {
     val medUiState by viewModel.medicineUiState.collectAsState()
     val dailyDosage by remember(medUiState.dosage, medUiState.customDosage) {
@@ -152,12 +153,12 @@ fun AddMedicineScreenPhaseFirst(
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             OutlinedButton(
-                onClick = {}, modifier = buttonModifier
+                onClick = { onCancelClicked() }, modifier = buttonModifier
             ) {
                 Text("Cancel")
             }
             Button(
-                onClick = {}, modifier = buttonModifier
+                onClick = { onFillNextDetailClicked() }, modifier = buttonModifier
             ) {
                 Text("Next")
             }
@@ -196,5 +197,8 @@ fun OptionsWithRadioAndText(
 @Composable
 @Preview(showBackground = true)
 fun PreviewAddMedPhaseFirst() {
-    AddMedicineScreenPhaseFirst(modifier = Modifier) {}
+    AddMedicineScreenPhaseFirst(
+        modifier = Modifier,
+        onFillNextDetailClicked = {},
+        onCancelClicked = {})
 }
