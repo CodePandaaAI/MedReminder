@@ -1,8 +1,11 @@
 package com.romit.medreminder.ui.screens
 
 import android.icu.util.Calendar
+import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -15,15 +18,32 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.romit.medreminder.R
+import com.romit.medreminder.ui.DosageType
+import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
 
 @Composable
-fun AddMedicinePhaseComplete(modifier: Modifier) {
-    var selectedTimes by remember { mutableStateOf(mutableListOf<String>()) }
+fun AddMedicinePhaseComplete(
+    modifier: Modifier,
+    viewmodel: AddMedicineScreenViewModel
+) {
+
+    val medUiState by viewmodel.medicineUiState.collectAsState()
     var showTimePickerDialog by remember { mutableStateOf(false) }
+    val dailyDosage = remember(medUiState.dosage, medUiState.customDosage) { // Ensure recalculation when relevant state changes
+        when (medUiState.dosage) {
+            DosageType.OnceDaily -> 1
+            DosageType.TwiceDaily -> 2
+            DosageType.Custom -> medUiState.customDosage.toInt() // Handle potential parsing error
+            DosageType.None -> 0
+        }
+    }
 
     Column(
-        modifier = modifier.fillMaxWidth().padding(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -38,7 +58,7 @@ fun AddMedicinePhaseComplete(modifier: Modifier) {
             color = MaterialTheme.colorScheme.surfaceContainer
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                if (selectedTimes.isEmpty()) {
+                if (medUiState.reminders.isEmpty()) {
                     Text(
                         text = "No reminder times set",
                         style = MaterialTheme.typography.bodyMedium,
@@ -46,28 +66,31 @@ fun AddMedicinePhaseComplete(modifier: Modifier) {
                     )
                 } else {
                     Text(
-                        text = "Selected Times (${selectedTimes.size})",
+                        text = "Selected Times (${medUiState.reminders.size})",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
 
-                    selectedTimes.forEachIndexed { index, time ->
+                    medUiState.reminders.forEachIndexed { index, time ->
                         Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(painter = painterResource(R.drawable.access_time), contentDescription = null)
+                            Icon(
+                                painter = painterResource(R.drawable.access_time),
+                                contentDescription = null
+                            )
                             Text(
-                                text = convertTo12HourFormat(time),
+                                text = viewmodel.convertTo12HourFormat(time),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             IconButton(
                                 onClick = {
-                                    selectedTimes = selectedTimes.toMutableList().apply {
-                                        removeAt(index)
-                                    }
+                                    viewmodel.removeReminder(index)
                                 }
                             ) {
                                 Icon(
@@ -81,44 +104,34 @@ fun AddMedicinePhaseComplete(modifier: Modifier) {
                 }
             }
         }
-
+        LaunchedEffect(medUiState, dailyDosage) {
+            Log.d(
+                "AddMedDebug",
+                "DosageType: ${medUiState.dosage}, CustomDosage: ${medUiState.customDosage}, Calculated dailyDosage: $dailyDosage, Reminders count: ${medUiState.reminders.size}"
+            )
+        }
         // Add time button
         Button(
             onClick = { showTimePickerDialog = true },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+            enabled = medUiState.reminders.size < dailyDosage // Updated condition
         ) {
             Icon(Icons.Default.Add, contentDescription = null)
-            Spacer(Modifier.width(8.dp))
+            Spacer(Modifier.size(ButtonDefaults.IconSize))
             Text("Add Reminder Time")
         }
 
         if (showTimePickerDialog) {
             TimePickerDialog(
                 onConfirm = { hour, minute ->
-                    val newTime = String.format("%02d:%02d", hour, minute)
-                    if (!selectedTimes.contains(newTime)) {
-                        selectedTimes = selectedTimes.toMutableList().apply {
-                            add(newTime)
-                            sort()
-                        }
-                    }
+                    viewmodel.validateAndAddReminder(hour, minute)
                     showTimePickerDialog = false
                 },
                 onDismiss = { showTimePickerDialog = false }
             )
         }
     }
-}
-
-// Simplified conversion function
-fun convertTo12HourFormat(time: String): String {
-    val (hourStr, minuteStr) = time.split(":")
-    val hour = hourStr.toInt()
-
-    val displayHour = if (hour == 0) 12 else if (hour > 12) hour - 12 else hour
-    val amPm = if (hour < 12) "AM" else "PM"
-
-    return "$displayHour:$minuteStr $amPm"
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -129,7 +142,7 @@ fun TimePickerDialog(
 ) {
     val currentTime = Calendar.getInstance()
     val timePickerState = rememberTimePickerState(
-        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY), // Default to current time
         initialMinute = currentTime.get(Calendar.MINUTE),
         is24Hour = false,
     )
@@ -164,7 +177,9 @@ fun TimePickerDialog(
                 }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth().height(40.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -174,7 +189,7 @@ fun TimePickerDialog(
                                 if (showDial) R.drawable.edit_calendar
                                 else R.drawable.access_time
                             ),
-                            contentDescription = "Toggle"
+                            contentDescription = "Toggle Input Mode" // Added content description
                         )
                     }
 

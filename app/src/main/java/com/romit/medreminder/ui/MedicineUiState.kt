@@ -6,7 +6,7 @@ import androidx.compose.runtime.Stable
 data class MedicineUiState(
     val medName: String = "",
     val dosage: DosageType = DosageType.None,
-    val reminderTime: String = "",
+    val reminders: List<String> = emptyList(),
     val refillDays: Int = 0,
     val notes: String? = null,
     val customDosage: Float = 0f,

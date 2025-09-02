@@ -33,13 +33,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.romit.medreminder.ui.DosageType
 import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
 
 @Composable
 fun AddMedicineScreenPhaseFirst(
-    viewModel: AddMedicineScreenViewModel = viewModel(),
+    viewModel: AddMedicineScreenViewModel,
     modifier: Modifier,
     onFillNextDetailClicked: () -> Unit,
     onCancelClicked: () -> Unit
@@ -200,5 +200,7 @@ fun PreviewAddMedPhaseFirst() {
     AddMedicineScreenPhaseFirst(
         modifier = Modifier,
         onFillNextDetailClicked = {},
-        onCancelClicked = {})
+        onCancelClicked = {},
+        viewModel = hiltViewModel()
+    )
 }

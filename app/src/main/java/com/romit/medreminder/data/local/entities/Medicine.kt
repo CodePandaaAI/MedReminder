@@ -9,7 +9,7 @@ data class Medicine(
     @PrimaryKey(autoGenerate = true) val medId: Long = 0,
     val name: String,
     val dosage: Int,
-    val reminderTime: String,
+    val reminders: String,
     val refillDays: Int,
     val notes: String?,
     val createdAt: Long = System.currentTimeMillis()
