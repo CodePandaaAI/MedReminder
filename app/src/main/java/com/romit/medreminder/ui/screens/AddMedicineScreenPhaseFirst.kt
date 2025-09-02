@@ -158,7 +158,8 @@ fun AddMedicineScreenPhaseFirst(
                 Text("Cancel")
             }
             Button(
-                onClick = { onFillNextDetailClicked() }, modifier = buttonModifier
+                onClick = { onFillNextDetailClicked() }, modifier = buttonModifier,
+                enabled = medUiState.medName.isNotBlank() && medUiState.dosage != DosageType.None
             ) {
                 Text("Next")
             }

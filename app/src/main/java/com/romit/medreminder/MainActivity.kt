@@ -19,12 +19,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation // Import for nested navigation
+import androidx.navigation.navigation
 import com.romit.medreminder.ui.screens.AddMedicinePhaseComplete
 import com.romit.medreminder.ui.screens.AddMedicineScreenPhaseFirst
 import com.romit.medreminder.ui.screens.HomeScreen
