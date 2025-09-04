@@ -8,7 +8,7 @@ data class MedicineUiState(
     val dosage: DosageType = DosageType.None,
     val reminders: List<String> = emptyList(),
     val refillDays: Int = 0,
-    val notes: String? = null,
+    val notes: String = "",
     val customDosage: Float = 0f,
 )
 

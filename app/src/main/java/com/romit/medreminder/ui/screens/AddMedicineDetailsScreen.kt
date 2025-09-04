@@ -3,6 +3,7 @@ package com.romit.medreminder.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,18 +28,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.romit.medreminder.R
 import com.romit.medreminder.ui.DosageType
 import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
 
 @Composable
-fun AddMedicineScreenPhaseFirst(
+fun AddMedicineDetailsScreen(
     viewModel: AddMedicineScreenViewModel,
     modifier: Modifier,
     onFillNextDetailClicked: () -> Unit,
@@ -81,6 +85,7 @@ fun AddMedicineScreenPhaseFirst(
             shape = RoundedCornerShape(8.dp),
             label = { Text("Enter Medicine Name") },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+            maxLines = 3,
             modifier = fullWidthModifier
         )
 
@@ -126,11 +131,11 @@ fun AddMedicineScreenPhaseFirst(
                 onValueChange = {
                     viewModel.changeCustomMedDosage(it)
                 },
-                valueRange = 0f..20f,
+                valueRange = 0f..10f,
+                steps = 10,
                 modifier = Modifier
             )
             Text(text = "Selected value: $dailyDosage")
-
         }
 
 
@@ -140,10 +145,16 @@ fun AddMedicineScreenPhaseFirst(
             modifier = fullWidthModifier
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Medicine Name: ${medUiState.medName}", fontWeight = FontWeight.Bold)
-                Text(
-                    "Daily Dosage: $dailyDosage",
-                    fontWeight = FontWeight.Bold
+                LabelValueRow(
+                    label = stringResource(id = R.string.medicine_name_label),
+                    value = medUiState.medName,
+                    valueMaxLines = 3,
+                    valueOverflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(8.dp))
+                LabelValueRow(
+                    label = stringResource(id = R.string.daily_dosage_label),
+                    value = "${medUiState.dosage} -> $dailyDosage"
                 )
             }
         }
@@ -196,9 +207,28 @@ fun OptionsWithRadioAndText(
 }
 
 @Composable
+fun LabelValueRow(
+    label: String,
+    value: String,
+    valueMaxLines: Int = 1, // Default to 1, can be overridden
+    valueOverflow: TextOverflow = TextOverflow.Clip // Default, can be overridden
+) {
+    Row(verticalAlignment = Alignment.Top) { // Added verticalAlignment = Alignment.Top
+        Text(label)
+        Spacer(Modifier.width(4.dp)) // Add a small space between label and value
+        Text(
+            text = value,
+            fontWeight = FontWeight.Bold,
+            maxLines = valueMaxLines,
+            overflow = valueOverflow
+        )
+    }
+}
+
+@Composable
 @Preview(showBackground = true)
 fun PreviewAddMedPhaseFirst() {
-    AddMedicineScreenPhaseFirst(
+    AddMedicineDetailsScreen(
         modifier = Modifier,
         onFillNextDetailClicked = {},
         onCancelClicked = {},

@@ -24,8 +24,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
-import com.romit.medreminder.ui.screens.AddMedicinePhaseComplete
-import com.romit.medreminder.ui.screens.AddMedicineScreenPhaseFirst
+import com.romit.medreminder.ui.Screen
+import com.romit.medreminder.ui.screens.AddMedicineDetailsScreenComplete
+import com.romit.medreminder.ui.screens.AddMedicineDetailsScreen
 import com.romit.medreminder.ui.screens.HomeScreen
 import com.romit.medreminder.ui.theme.MedReminderTheme
 import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
@@ -44,26 +45,20 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-const val ADD_MEDICINE_FLOW_ROUTE = "add_medicine_flow"
-const val ADD_MEDICINE_PHASE_FIRST_ROUTE = "add_medicine_phase_first"
-const val ADD_MEDICINE_PHASE_FINAL_ROUTE = "add_medicine_phase_final"
-const val HOME_ROUTE = "home"
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
+    val currentDestination = navBackStackEntry?.destination
 
-    val title = when (navBackStackEntry?.destination?.parent?.route) { // Check parent for nested routes
-        ADD_MEDICINE_FLOW_ROUTE -> "Add Medicine Details"
-        else -> when (currentRoute) {
-            HOME_ROUTE -> "MedReminder"
-            // If we are directly on a route that is part of the flow (e.g. during transitions or deep links)
-            ADD_MEDICINE_PHASE_FIRST_ROUTE, ADD_MEDICINE_PHASE_FINAL_ROUTE -> "Add Medicine Details"
-            else -> "MedReminder" // Default title
-        }
+    // Get title based on current route using serializable objects
+    val title = when {
+        currentDestination?.route == Screen.Home::class.qualifiedName -> "MedReminder"
+        currentDestination?.parent?.route == Screen.AddMedicineDetailsScreenFlow::class.qualifiedName -> "Add Medicine Details"
+        currentDestination?.route == Screen.AddMedicineDetailsScreen::class.qualifiedName -> "Add Medicine Details"
+        currentDestination?.route == Screen.AddMedicineDetailsScreenComplete::class.qualifiedName -> "Add Medicine Details"
+        else -> "MedReminder"
     }
 
     Scaffold(
@@ -76,49 +71,66 @@ fun AppNavigation() {
             )
         },
         floatingActionButton = {
-            if (currentRoute == HOME_ROUTE) {
-                FloatingActionButton(onClick = { navController.navigate(ADD_MEDICINE_FLOW_ROUTE) }) { // Navigate to the flow
+            // Show FAB only on Home screen
+            if (currentDestination?.route == Screen.Home::class.qualifiedName) {
+                FloatingActionButton(onClick = {
+                    navController.navigate(Screen.AddMedicineDetailsScreenFlow)
+                }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add Medicine")
                 }
             }
         }
     ) { innerPadding ->
-        NavHost(navController = navController, startDestination = HOME_ROUTE) {
-            composable(route = HOME_ROUTE) {
+        NavHost(
+            navController = navController,
+            startDestination = Screen.Home
+        ) {
+            composable<Screen.Home> {
                 HomeScreen(
                     modifier = Modifier.padding(innerPadding),
-                    onAddMedicineClicked = { navController.navigate(ADD_MEDICINE_FLOW_ROUTE) } // Navigate to the flow
+                    onAddMedicineClicked = {
+                        navController.navigate(Screen.AddMedicineDetailsScreenFlow)
+                    }
                 )
             }
 
             // Nested navigation graph for the add medicine flow
-            navigation(
-                startDestination = ADD_MEDICINE_PHASE_FIRST_ROUTE,
-                route = ADD_MEDICINE_FLOW_ROUTE
+            navigation<Screen.AddMedicineDetailsScreenFlow>(
+                startDestination = Screen.AddMedicineDetailsScreen
             ) {
-                composable(route = ADD_MEDICINE_PHASE_FIRST_ROUTE) { backStackEntry ->
+                composable<Screen.AddMedicineDetailsScreen> { backStackEntry ->
                     val parentEntry = remember(backStackEntry) {
-                        navController.getBackStackEntry(ADD_MEDICINE_FLOW_ROUTE)
+                        navController.getBackStackEntry<Screen.AddMedicineDetailsScreenFlow>()
                     }
                     val addMedicineScreenViewModel: AddMedicineScreenViewModel = hiltViewModel(parentEntry)
 
-                    AddMedicineScreenPhaseFirst(
+                    AddMedicineDetailsScreen(
                         modifier = Modifier.padding(innerPadding),
                         viewModel = addMedicineScreenViewModel,
-                        onFillNextDetailClicked = { navController.navigate(ADD_MEDICINE_PHASE_FINAL_ROUTE) },
-                        onCancelClicked = { navController.popBackStack(ADD_MEDICINE_FLOW_ROUTE, inclusive = true) }
+                        onFillNextDetailClicked = {
+                            navController.navigate(Screen.AddMedicineDetailsScreenComplete)
+                        },
+                        onCancelClicked = {
+                            navController.popBackStack<Screen.AddMedicineDetailsScreenFlow>(inclusive = true)
+                        }
                     )
                 }
-                composable(route = ADD_MEDICINE_PHASE_FINAL_ROUTE) { backStackEntry ->
+
+                composable<Screen.AddMedicineDetailsScreenComplete> { backStackEntry ->
                     val parentEntry = remember(backStackEntry) {
-                        navController.getBackStackEntry(ADD_MEDICINE_FLOW_ROUTE)
+                        navController.getBackStackEntry<Screen.AddMedicineDetailsScreenFlow>()
                     }
                     val addMedicineScreenViewModel: AddMedicineScreenViewModel = hiltViewModel(parentEntry)
 
-                    AddMedicinePhaseComplete(
+                    AddMedicineDetailsScreenComplete(
                         viewmodel = addMedicineScreenViewModel,
                         modifier = Modifier.padding(innerPadding),
-//                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = {
+                            navController.popBackStack<Screen.Home>(
+                                inclusive = false,
+                                saveState = false
+                            )
+                        }
                     )
                 }
             }
