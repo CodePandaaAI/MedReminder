@@ -21,23 +21,27 @@ class AddMedicineScreenViewModel @Inject constructor(private val medReminderRepo
 
     val medicineUiState: StateFlow<MedicineUiState> = _medicineUiState.asStateFlow()
 
-    suspend fun addMedicine() {
-        val dosageAmount: Int = when (medicineUiState.value.dosage) {
-            DosageType.None -> 0
-            DosageType.OnceDaily -> 1
-            DosageType.TwiceDaily -> 2
-            DosageType.Custom -> medicineUiState.value.customDosage.toInt()
+    suspend fun addMedicine(): Boolean {
+        return try {
+            val dosageAmount: Int = when (medicineUiState.value.dosage) {
+                DosageType.None -> 0
+                DosageType.OnceDaily -> 1
+                DosageType.TwiceDaily -> 2
+                DosageType.Custom -> medicineUiState.value.customDosage.toInt()
+            }
+            val reminders = medicineUiState.value.reminders.joinToString(",")
+            val medicine = Medicine(
+                name = medicineUiState.value.medName,
+                dosage = dosageAmount,
+                reminders = reminders,
+                refillDays = medicineUiState.value.refillDays,
+                notes = medicineUiState.value.notes
+            )
+            medReminderRepository.addMedicine(medicine)
+            true
+        } catch (e: Exception) {
+            false // Simple boolean return
         }
-
-        val reminders = medicineUiState.value.reminders.joinToString(",")
-        val medicine = Medicine(
-            name = _medicineUiState.value.medName,
-            dosage = dosageAmount,
-            reminders = reminders,
-            refillDays = medicineUiState.value.refillDays,
-            notes = medicineUiState.value.notes
-        )
-        medReminderRepository.addMedicine(medicine)
 
     }
 
@@ -54,16 +58,21 @@ class AddMedicineScreenViewModel @Inject constructor(private val medReminderRepo
     }
 
     fun changeCustomMedDosage(customDosage: Float) {
+        val validDosage = customDosage.coerceIn(1f, 10f) // Simple range limit
         _medicineUiState.update { medicineUiState ->
-            medicineUiState.copy(customDosage = customDosage)
+            medicineUiState.copy(customDosage = validDosage)
         }
     }
 
+    // Current - no bounds checking
     fun removeReminder(index: Int) {
-        val newList = medicineUiState.value.reminders.toMutableList()
-        newList.removeAt(index)
-        _medicineUiState.update { medicineUiState ->
-            medicineUiState.copy(reminders = newList.toList())
+        val currentReminders = medicineUiState.value.reminders
+        if (index in currentReminders.indices) { // Simple bounds check
+            val newList = currentReminders.toMutableList()
+            newList.removeAt(index)
+            _medicineUiState.update { medicineUiState ->
+                medicineUiState.copy(reminders = newList.toList())
+            }
         }
     }
 
@@ -81,13 +90,13 @@ class AddMedicineScreenViewModel @Inject constructor(private val medReminderRepo
     }
 
     fun validateAndChangeMedicineRefillDays(refillDays: String) {
-        val refillDaysValid =
-            if (refillDays.isNotBlank() && refillDays.toIntOrNull() != null) refillDays.toInt()
-            else 0
-        if (refillDaysValid >= 0) {
-            _medicineUiState.update { medicineUiState ->
-                medicineUiState.copy(refillDays = refillDaysValid)
-            }
+        val refillDaysValid = if (refillDays.isNotBlank() && refillDays.toIntOrNull() != null) {
+            val days = refillDays.toInt()
+            if (days in 1..365) days else 0 // Simple range check
+        } else 0
+
+        _medicineUiState.update { medicineUiState ->
+            medicineUiState.copy(refillDays = refillDaysValid)
         }
     }
 
@@ -99,8 +108,12 @@ class AddMedicineScreenViewModel @Inject constructor(private val medReminderRepo
 
 
     fun convertTo12HourFormat(time: String): String {
-        val localTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"))
-        val displayFormatter = DateTimeFormatter.ofPattern("hh:mm a")
-        return localTime.format(displayFormatter)
+        return try {
+            val localTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"))
+            val displayFormatter = DateTimeFormatter.ofPattern("hh:mm a")
+            localTime.format(displayFormatter)
+        } catch (e: Exception) {
+            time // Return original if parsing fails
+        }
     }
 }

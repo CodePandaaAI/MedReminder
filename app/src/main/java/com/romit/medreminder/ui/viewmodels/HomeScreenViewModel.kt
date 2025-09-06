@@ -9,6 +9,8 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(val medReminderRepository: MedReminderRepository): ViewModel() {
@@ -21,5 +23,15 @@ class HomeScreenViewModel @Inject constructor(val medReminderRepository: MedRemi
 
     suspend fun deleteMedicine(medicine: Medicine) {
         medReminderRepository.deleteMedicine(medicine)
+    }
+
+    fun convertTo12HourFormat(time: String): String {
+        return try {
+            val localTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"))
+            val displayFormatter = DateTimeFormatter.ofPattern("hh:mm a")
+            localTime.format(displayFormatter)
+        } catch (e: Exception) {
+            time // Return original if parsing fails
+        }
     }
 }
