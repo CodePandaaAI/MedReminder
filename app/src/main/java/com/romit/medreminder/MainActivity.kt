@@ -4,32 +4,31 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
-import com.romit.medreminder.ui.Screen
-import com.romit.medreminder.ui.screens.AddMedicineDetailsScreenComplete
+import androidx.navigation.toRoute
 import com.romit.medreminder.ui.screens.AddMedicineDetailsScreen
+import com.romit.medreminder.ui.screens.AddMedicineDetailsScreenComplete
+import com.romit.medreminder.ui.screens.EditMedicineScreen
 import com.romit.medreminder.ui.screens.HomeScreen
 import com.romit.medreminder.ui.theme.MedReminderTheme
 import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
@@ -52,65 +51,74 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
 
-    // Get title based on current route using serializable objects
-    val title = when {
-        currentDestination?.route == Screen.Home::class.qualifiedName -> "MedReminder"
-        currentDestination?.parent?.route == Screen.AddMedicineDetailsScreenFlow::class.qualifiedName -> "Add Medicine Details"
-        currentDestination?.route == Screen.AddMedicineDetailsScreen::class.qualifiedName -> "Add Medicine Details"
-        currentDestination?.route == Screen.AddMedicineDetailsScreenComplete::class.qualifiedName -> "Add Medicine Details"
-        else -> "MedReminder"
+    // Simplified title logic using type-safe navigation routes
+    // Uses navController.currentBackStackEntry directly with toRoute()
+    val title = when (navController.currentBackStackEntry?.toRoute<Screen>()) {
+        is Screen.Home -> "MedReminder"
+        is Screen.EditMedicineScreen -> "Edit Medicine" // Correctly handles EditMedicineScreen title
+        is Screen.AddMedicineDetailsScreenFlow, // Covers the flow itself if it were a direct destination
+        is Screen.AddMedicineDetailsScreen,
+        is Screen.AddMedicineDetailsScreenComplete -> "Add Medicine Details"
+
+        else -> "MedReminder" // Default title
     }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             CenterAlignedTopAppBar(
-                title = {
-                    Text(title)
-                }
+                title = { Text(title) },
+                colors = TopAppBarDefaults.topAppBarColors(if (isSystemInDarkTheme()) Color(0xFF121212) else MaterialTheme.colorScheme.surfaceContainer)
             )
         },
         floatingActionButton = {
-            // Show FAB only on Home screen
-            if (currentDestination?.route == Screen.Home::class.qualifiedName) {
+            // Simplified FAB visibility using type-safe check
+            if (navController.currentBackStackEntry?.toRoute<Screen>() is Screen.Home) {
                 ExtendedFloatingActionButton(onClick = {
                     navController.navigate(Screen.AddMedicineDetailsScreenFlow)
                 }) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add Medicine")
-                    Text("Add Medicine")
+                    Text(text = "Add Medicine")
                 }
             }
         }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home
+            startDestination = Screen.Home, // Assumes Screen.Home is a @Serializable object or data object
+            modifier = Modifier.padding(innerPadding) // Apply padding from Scaffold to NavHost
         ) {
             composable<Screen.Home> {
                 HomeScreen(
-                    modifier = Modifier.padding(innerPadding),
+                    // Modifier.padding(innerPadding) is now handled by NavHost
                     onAddMedicineClicked = {
                         navController.navigate(Screen.AddMedicineDetailsScreenFlow)
+                    },
+                    onMedicineClicked = { medicineId -> // medicineId is Long
+                        navController.navigate(Screen.EditMedicineScreen(id = medicineId))
                     }
                 )
             }
 
-            // Nested navigation graph for the add medicine flow
+            composable<Screen.EditMedicineScreen> { backStackEntry ->
+                val routeArgs = backStackEntry.toRoute<Screen.EditMedicineScreen>()
+                // EditMedicineScreen only needs the ID for now
+                EditMedicineScreen(medId = routeArgs.id)
+            }
+
             navigation<Screen.AddMedicineDetailsScreenFlow>(
                 startDestination = Screen.AddMedicineDetailsScreen
             ) {
-                composable<Screen.AddMedicineDetailsScreen> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
+                composable<Screen.AddMedicineDetailsScreen> { navBackStackEntry ->
+                    val parentEntry = remember(navBackStackEntry) {
                         navController.getBackStackEntry<Screen.AddMedicineDetailsScreenFlow>()
                     }
                     val addMedicineScreenViewModel: AddMedicineScreenViewModel =
                         hiltViewModel(parentEntry)
 
                     AddMedicineDetailsScreen(
-                        modifier = Modifier.padding(innerPadding),
+                        // Modifier.padding(innerPadding) is now handled by NavHost
                         viewModel = addMedicineScreenViewModel,
                         onFillNextDetailClicked = {
                             navController.navigate(Screen.AddMedicineDetailsScreenComplete)
@@ -123,16 +131,16 @@ fun AppNavigation() {
                     )
                 }
 
-                composable<Screen.AddMedicineDetailsScreenComplete> { backStackEntry ->
-                    val parentEntry = remember(backStackEntry) {
+                composable<Screen.AddMedicineDetailsScreenComplete> { navBackStackEntry ->
+                    val parentEntry = remember(navBackStackEntry) {
                         navController.getBackStackEntry<Screen.AddMedicineDetailsScreenFlow>()
                     }
                     val addMedicineScreenViewModel: AddMedicineScreenViewModel =
                         hiltViewModel(parentEntry)
 
                     AddMedicineDetailsScreenComplete(
+                        // Modifier.padding(innerPadding) is now handled by NavHost
                         viewmodel = addMedicineScreenViewModel,
-                        modifier = Modifier.padding(innerPadding),
                         onNavigateBack = {
                             navController.popBackStack<Screen.Home>(
                                 inclusive = false,

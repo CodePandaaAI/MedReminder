@@ -23,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -54,7 +53,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AddMedicineDetailsScreenComplete(
-    modifier: Modifier,
     viewmodel: AddMedicineScreenViewModel,
     onNavigateBack: () -> Unit
 ) {
@@ -72,7 +70,7 @@ fun AddMedicineDetailsScreenComplete(
     }
     val fullWidthModifier = Modifier.fillMaxWidth()
     Column(
-        modifier = modifier
+        modifier = Modifier
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -252,7 +250,6 @@ fun TimePickerDialog(onConfirm: (hour: Int, minute: Int) -> Unit, onDismiss: () 
 fun AddMedicinePhaseCompletePreview() {
     val viewmodel: AddMedicineScreenViewModel = hiltViewModel()
     AddMedicineDetailsScreenComplete(
-        modifier = Modifier,
         viewmodel = viewmodel,
         onNavigateBack = {})
 }

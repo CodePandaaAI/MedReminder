@@ -1,6 +1,9 @@
 package com.romit.medreminder.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,20 +45,29 @@ import com.romit.medreminder.ui.viewmodels.HomeScreenViewModel
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier,
     viewModel: HomeScreenViewModel = hiltViewModel(),
-    onAddMedicineClicked: () -> Unit
+    onAddMedicineClicked: () -> Unit,
+    onMedicineClicked: (id: Long) -> Unit
 ) {
     val medicines by viewModel.allMedicines.collectAsState()
+    val background = Color(0xFF121212)
 
-    Box(modifier = modifier.fillMaxSize()) {
+    // High-Level Container
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(if (isSystemInDarkTheme()) background else MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        // If No Medicines Show This
         if (medicines.isEmpty()) {
             EmptyState(onAddMedicineClicked = onAddMedicineClicked)
-        } else {
+        }
+        // If Have Medicines Show This
+        else {
             Column(
                 modifier = Modifier.fillMaxSize()
             ) {
-                // Simple Header
+                // Title For User Experience
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -64,8 +76,9 @@ fun HomeScreen(
                     Text(
                         text = "My Medicines",
                         style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                        fontWeight = FontWeight.Bold,
+
+                        )
                     Text(
                         text = "${medicines.size} medicines",
                         style = MaterialTheme.typography.bodyMedium,
@@ -81,9 +94,11 @@ fun HomeScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(medicines) { medicine ->
+                        // Medicine Card representing Each Medicine
                         MedicineCard(
                             medicine = medicine,
-                            viewModel = viewModel
+                            viewModel = viewModel,
+                            onMedicineClicked = { onMedicineClicked(it) }
                         )
                     }
                     item { Spacer(modifier = Modifier.height(80.dp)) }
@@ -106,25 +121,35 @@ fun HomeScreen(
 @Composable
 private fun MedicineCard(
     medicine: Medicine,
-    viewModel: HomeScreenViewModel
+    viewModel: HomeScreenViewModel,
+    onMedicineClicked: (id: Long) -> Unit
 ) {
+    // Color For Remaining Refill Days based on how close or far is the day
     val refillColor = when {
         medicine.refillDays > 7 -> MaterialTheme.colorScheme.primary
         medicine.refillDays > 3 -> Color(0xFFFB8C00)
         else -> MaterialTheme.colorScheme.error
     }
+    // Color used for Cards
+    val foreground = Color(0xFF1E1E1E)
 
+    // Card with All details
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = { onMedicineClicked(medicine.medId) }),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
+            containerColor = if (isSystemInDarkTheme()) foreground
+            else MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(0.dp)
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
+        // Column the HIgh Level Container for Whole Card Elements
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // Row for Medicine Name and Refill Days Showcase
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -161,7 +186,7 @@ private fun MedicineCard(
             // Reminder Times
             val reminders = medicine.reminders.split(",")
                 .map { viewModel.convertTo12HourFormat(it.trim()) }
-
+            // Showing all reminders horizontally in surface
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
@@ -179,7 +204,7 @@ private fun MedicineCard(
                 }
             }
 
-            // Notes
+            // Notes if they exists
             if (!medicine.notes.isNullOrBlank()) {
                 Text(
                     text = medicine.notes,
@@ -191,6 +216,7 @@ private fun MedicineCard(
     }
 }
 
+// Shown when no medicines are stored
 @Composable
 private fun EmptyState(onAddMedicineClicked: () -> Unit) {
     Column(

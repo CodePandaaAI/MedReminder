@@ -44,7 +44,6 @@ import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
 @Composable
 fun AddMedicineDetailsScreen(
     viewModel: AddMedicineScreenViewModel,
-    modifier: Modifier,
     onFillNextDetailClicked: () -> Unit,
     onCancelClicked: () -> Unit
 ) {
@@ -65,7 +64,7 @@ fun AddMedicineDetailsScreen(
         .width(144.dp)
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(vertical = 32.dp, horizontal = 24.dp),
@@ -229,7 +228,6 @@ fun LabelValueRow(
 @Preview(showBackground = true)
 fun PreviewAddMedPhaseFirst() {
     AddMedicineDetailsScreen(
-        modifier = Modifier,
         onFillNextDetailClicked = {},
         onCancelClicked = {},
         viewModel = hiltViewModel()

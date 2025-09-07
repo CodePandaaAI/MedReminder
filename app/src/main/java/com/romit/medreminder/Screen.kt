@@ -1,7 +1,8 @@
-package com.romit.medreminder.ui
+package com.romit.medreminder
 
 import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface Screen {
     @Serializable
     data object Home : Screen
@@ -14,4 +15,7 @@ sealed interface Screen {
 
     @Serializable
     data object AddMedicineDetailsScreenComplete : Screen
+
+    @Serializable
+    data class EditMedicineScreen(val id: Long): Screen
 }
