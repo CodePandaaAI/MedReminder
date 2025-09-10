@@ -1,10 +1,13 @@
 package com.romit.medreminder.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,17 +21,12 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimeInput
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,10 +41,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.romit.medreminder.R
 import com.romit.medreminder.ui.DosageType
+import com.romit.medreminder.ui.components.TimePickerDialog
+import com.romit.medreminder.ui.theme.background
+import com.romit.medreminder.ui.theme.foreground
 import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
 import kotlinx.coroutines.launch
 
@@ -64,16 +64,16 @@ fun AddMedicineDetailsScreenComplete(
         when (medicineUiState.dosage) {
             DosageType.OnceDaily -> 1
             DosageType.TwiceDaily -> 2
-            DosageType.Custom -> medicineUiState.customDosage.toInt()
+            DosageType.Custom -> medicineUiState.customDosage
             DosageType.None -> 0
         }
     }
     val fullWidthModifier = Modifier.fillMaxWidth()
     Column(
-        modifier = Modifier
-            .padding(16.dp)
+        modifier = Modifier.background(if (isSystemInDarkTheme()) background else MaterialTheme.colorScheme.surfaceContainer)
+            .padding(16.dp).fillMaxSize()
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Text(
             "Medicine Reminders!",
@@ -81,7 +81,8 @@ fun AddMedicineDetailsScreenComplete(
         )
 
         Surface(
-            color = MaterialTheme.colorScheme.surfaceContainer,
+            color =  if (isSystemInDarkTheme()) foreground
+            else MaterialTheme.colorScheme.surface,
             modifier = fullWidthModifier,
             shape = RoundedCornerShape(24.dp)
         ) {
@@ -189,59 +190,6 @@ fun AddMedicineDetailsScreenComplete(
             showTimePickerDialog = false
         }
         )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TimePickerDialog(onConfirm: (hour: Int, minute: Int) -> Unit, onDismiss: () -> Unit) {
-    val timePickerState = rememberTimePickerState(
-        initialMinute = 2,
-        initialHour = 2,
-        is24Hour = false
-    )
-    var showDialog by remember { mutableStateOf(true) }
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(shape = RoundedCornerShape(24.dp)) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Set Time")
-                if (showDialog) {
-                    TimePicker(state = timePickerState)
-                } else {
-                    TimeInput(state = timePickerState)
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    IconButton(onClick = { showDialog = !showDialog }) {
-                        Icon(
-                            painter = if (showDialog) painterResource(R.drawable.keyboard)
-                            else painterResource(R.drawable.access_time),
-                            contentDescription = null
-                        )
-                    }
-                    Row {
-                        TextButton(onClick = { onDismiss() }) {
-                            Text("Cancel")
-                        }
-                        TextButton(onClick = {
-                            onConfirm(
-                                timePickerState.hour,
-                                timePickerState.minute
-                            )
-                        }) {
-                            Text("Add")
-                        }
-                    }
-                }
-            }
-        }
     }
 }
 

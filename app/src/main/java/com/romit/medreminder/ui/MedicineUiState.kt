@@ -9,7 +9,9 @@ data class MedicineUiState(
     val reminders: List<String> = emptyList(),
     val refillDays: Int = 0,
     val notes: String = "",
-    val customDosage: Float = 0f,
+    val customDosage: Int = 0,
+    val isLoading: Boolean = false,
+    val error: String = ""
 )
 
 @Stable

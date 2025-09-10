@@ -17,14 +17,6 @@ class HomeScreenViewModel @Inject constructor(val medReminderRepository: MedRemi
     val allMedicines: StateFlow<List<Medicine>> = medReminderRepository.allMedicines.stateIn(
         viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), emptyList())
 
-    suspend fun addMedicine(medicine: Medicine) {
-        medReminderRepository.addMedicine(medicine)
-    }
-
-    suspend fun deleteMedicine(medicine: Medicine) {
-        medReminderRepository.deleteMedicine(medicine)
-    }
-
     fun convertTo12HourFormat(time: String): String {
         return try {
             val localTime = LocalTime.parse(time, DateTimeFormatter.ofPattern("HH:mm"))

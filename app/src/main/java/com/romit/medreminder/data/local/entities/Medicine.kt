@@ -11,6 +11,6 @@ data class Medicine(
     val dosage: Int,
     val reminders: String,
     val refillDays: Int,
-    val notes: String?,
+    val notes: String,
     val createdAt: Long = System.currentTimeMillis()
 )

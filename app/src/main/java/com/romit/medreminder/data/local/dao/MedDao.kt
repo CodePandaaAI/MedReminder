@@ -18,4 +18,7 @@ interface MedDao {
 
     @Delete
     suspend fun deleteMedicine(medicine: Medicine)
+
+    @Query("SELECT * FROM Medicine WHERE medId = :id")
+    suspend fun getMedicineById(id: Long): Medicine?
 }

@@ -52,15 +52,12 @@ class MainActivity : ComponentActivity() {
 fun AppNavigation() {
     val navController = rememberNavController()
 
-    // Simplified title logic using type-safe navigation routes
-    // Uses navController.currentBackStackEntry directly with toRoute()
     val title = when (navController.currentBackStackEntry?.toRoute<Screen>()) {
         is Screen.Home -> "MedReminder"
         is Screen.EditMedicineScreen -> "Edit Medicine" // Correctly handles EditMedicineScreen title
         is Screen.AddMedicineDetailsScreenFlow, // Covers the flow itself if it were a direct destination
         is Screen.AddMedicineDetailsScreen,
         is Screen.AddMedicineDetailsScreenComplete -> "Add Medicine Details"
-
         else -> "MedReminder" // Default title
     }
 
@@ -69,7 +66,9 @@ fun AppNavigation() {
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(title) },
-                colors = TopAppBarDefaults.topAppBarColors(if (isSystemInDarkTheme()) Color(0xFF121212) else MaterialTheme.colorScheme.surfaceContainer)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    if (isSystemInDarkTheme()) Color(0xFF121212) else MaterialTheme.colorScheme.surfaceContainer
+                )
             )
         },
         floatingActionButton = {
@@ -104,7 +103,15 @@ fun AppNavigation() {
             composable<Screen.EditMedicineScreen> { backStackEntry ->
                 val routeArgs = backStackEntry.toRoute<Screen.EditMedicineScreen>()
                 // EditMedicineScreen only needs the ID for now
-                EditMedicineScreen(medId = routeArgs.id)
+                EditMedicineScreen(
+                    medId = routeArgs.id,
+                    onCancelOrSuccess = {
+                        navController.popBackStack<Screen.Home>(
+                            inclusive = false,
+                            saveState = false
+                        )
+                    }
+                )
             }
 
             navigation<Screen.AddMedicineDetailsScreenFlow>(

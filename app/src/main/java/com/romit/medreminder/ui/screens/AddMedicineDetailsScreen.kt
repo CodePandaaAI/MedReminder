@@ -1,24 +1,31 @@
 package com.romit.medreminder.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,10 +35,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +48,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.romit.medreminder.R
 import com.romit.medreminder.ui.DosageType
+import com.romit.medreminder.ui.components.LabelValueRow
+import com.romit.medreminder.ui.components.DosageOption
+import com.romit.medreminder.ui.theme.background
+import com.romit.medreminder.ui.theme.foreground
 import com.romit.medreminder.ui.viewmodels.AddMedicineScreenViewModel
 
 @Composable
@@ -53,7 +66,7 @@ fun AddMedicineDetailsScreen(
             when (medUiState.dosage) {
                 DosageType.OnceDaily -> 1
                 DosageType.TwiceDaily -> 2
-                DosageType.Custom -> medUiState.customDosage.toInt()
+                DosageType.Custom -> medUiState.customDosage
                 DosageType.None -> 0
             }
         }
@@ -65,9 +78,10 @@ fun AddMedicineDetailsScreen(
 
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .background(if (isSystemInDarkTheme()) background else MaterialTheme.colorScheme.surfaceContainer)
+            .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(vertical = 32.dp, horizontal = 24.dp),
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -81,7 +95,6 @@ fun AddMedicineDetailsScreen(
         OutlinedTextField(
             value = medUiState.medName,
             onValueChange = { viewModel.changeMedName(it) },
-            shape = RoundedCornerShape(8.dp),
             label = { Text("Enter Medicine Name") },
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             maxLines = 3,
@@ -95,8 +108,8 @@ fun AddMedicineDetailsScreen(
             modifier = Modifier
         )
 
-        OptionsWithRadioAndText(
-            fullWidthModifier,
+        DosageOption(
+            modifier = fullWidthModifier,
             medUiState.dosage == DosageType.OnceDaily,
             onOptionClicked = {
                 viewModel.changeMedDosage(DosageType.OnceDaily)
@@ -105,8 +118,8 @@ fun AddMedicineDetailsScreen(
         )
 
 
-        OptionsWithRadioAndText(
-            fullWidthModifier,
+        DosageOption(
+            modifier = fullWidthModifier,
             medUiState.dosage == DosageType.TwiceDaily,
             onOptionClicked = {
                 viewModel.changeMedDosage(DosageType.TwiceDaily)
@@ -115,8 +128,8 @@ fun AddMedicineDetailsScreen(
         )
 
 
-        OptionsWithRadioAndText(
-            fullWidthModifier,
+        DosageOption(
+            modifier = fullWidthModifier,
             medUiState.dosage == DosageType.Custom,
             onOptionClicked = {
                 viewModel.changeMedDosage(DosageType.Custom)
@@ -125,21 +138,14 @@ fun AddMedicineDetailsScreen(
         )
 
         if (medUiState.dosage == DosageType.Custom) {
-            Slider(
-                value = medUiState.customDosage,
-                onValueChange = {
-                    viewModel.changeCustomMedDosage(it)
-                },
-                valueRange = 0f..10f,
-                steps = 10,
-                modifier = Modifier
+            CustomDosageInput(
+                customDosage = medUiState.customDosage,
+                onDosageChange = { viewModel.changeCustomMedDosage(it) },
             )
-            Text(text = "Selected value: $dailyDosage")
         }
 
-
         Surface(
-            color = MaterialTheme.colorScheme.secondaryContainer,
+            color = MaterialTheme.colorScheme.primaryContainer,
             shape = RoundedCornerShape(28.dp),
             modifier = fullWidthModifier
         ) {
@@ -178,49 +184,70 @@ fun AddMedicineDetailsScreen(
 }
 
 @Composable
-fun OptionsWithRadioAndText(
-    modifier: Modifier,
-    selectedRadioButton: Boolean, onOptionClicked: () -> Unit, optionText: String,
+fun CustomDosageInput(
+    customDosage: Int,
+    onDosageChange: (Int) -> Unit
 ) {
-    Surface(
-        color = MaterialTheme.colorScheme.surfaceContainer,
-        shape = RoundedCornerShape(24.dp),
-        modifier = modifier
-            .selectable(
-                selected = selectedRadioButton, onClick = {
-                    onOptionClicked()
-                }, role = Role.RadioButton
-            )
+    val focusManager = LocalFocusManager.current
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(16.dp)
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(
+                    if (isSystemInDarkTheme()) foreground
+                    else MaterialTheme.colorScheme.surface
+                )
         ) {
-            RadioButton(
-                selected = selectedRadioButton, onClick = null
-            )
-            Text(optionText)
+            IconButton(
+                onClick = {
+                    if (customDosage > 1) {
+                        onDosageChange(customDosage - 1)
+                    }
+                },
+                enabled = customDosage > 1
+            ) {
+                Icon(painterResource(R.drawable.remove), contentDescription = "Decrease dosage")
+            }
         }
-    }
-}
-
-@Composable
-fun LabelValueRow(
-    label: String,
-    value: String,
-    valueMaxLines: Int = 1, // Default to 1, can be overridden
-    valueOverflow: TextOverflow = TextOverflow.Clip // Default, can be overridden
-) {
-    Row(verticalAlignment = Alignment.Top) { // Added verticalAlignment = Alignment.Top
-        Text(label)
-        Spacer(Modifier.width(4.dp)) // Add a small space between label and value
-        Text(
-            text = value,
-            fontWeight = FontWeight.Bold,
-            maxLines = valueMaxLines,
-            overflow = valueOverflow
+        Spacer(Modifier.width(8.dp))
+        OutlinedTextField(
+            value = customDosage.toString(),
+            onValueChange = { newValue ->
+                // Allow only digits and handle empty string
+                if (newValue.all { it.isDigit() }) {
+                    val intValue = newValue.toIntOrNull() ?: 0
+                    onDosageChange(intValue)
+                }
+            },
+            label = { Text("Times a day") },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+            modifier = Modifier.width(120.dp)
         )
+        Spacer(Modifier.width(8.dp))
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(
+                    if (isSystemInDarkTheme()) foreground
+                    else MaterialTheme.colorScheme.surface
+                )
+        ) {
+            IconButton(onClick = {
+                onDosageChange(customDosage + 1)
+            }) {
+                Icon(Icons.Default.Add, contentDescription = "Increase dosage")
+            }
+        }
     }
 }
 

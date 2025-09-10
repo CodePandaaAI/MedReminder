@@ -2,6 +2,8 @@ package com.romit.medreminder.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+val background = Color(0xFF121212)
+val foreground = Color(0xFF1E1E1E)
 val primaryLight = Color(0xFF4C662B)
 val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFCDEDA3)
