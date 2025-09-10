@@ -112,7 +112,6 @@ fun EditMedicineScreen(
 
 
         Column(
-            modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             DosageOption(
