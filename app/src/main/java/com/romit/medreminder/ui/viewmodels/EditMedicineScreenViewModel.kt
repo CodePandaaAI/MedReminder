@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.romit.medreminder.data.local.entities.Medicine
 import com.romit.medreminder.data.repository.MedReminderRepository
-import com.romit.medreminder.notifications.local.AlarmScheduler
+import com.romit.medreminder.notifications.local.NotificationScheduler
 import com.romit.medreminder.ui.DosageType
 import com.romit.medreminder.ui.MedicineUiState
 import com.romit.medreminder.ui.utils.SharedViewModelFunctions
@@ -19,7 +19,10 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @HiltViewModel
-class EditMedicineScreenViewModel @Inject constructor(private val medReminderRepository: MedReminderRepository, private val alarmScheduler: AlarmScheduler) :
+class EditMedicineScreenViewModel @Inject constructor(
+    private val medReminderRepository: MedReminderRepository,
+    private val notificationScheduler: NotificationScheduler
+) :
     ViewModel(), SharedViewModelFunctions {
 
     private val _medicineUiState = MutableStateFlow(MedicineUiState())
@@ -58,7 +61,7 @@ class EditMedicineScreenViewModel @Inject constructor(private val medReminderRep
 
             val oldMedicine = medReminderRepository.getMedicineById(medId)
             if (oldMedicine != null) {
-                alarmScheduler.cancel(oldMedicine)
+                notificationScheduler.cancelReminders(oldMedicine)
             }
             val dosageAmount: Int = when (medicineUiState.value.dosage) {
                 DosageType.None -> 0
@@ -77,7 +80,7 @@ class EditMedicineScreenViewModel @Inject constructor(private val medReminderRep
             )
             medReminderRepository.addMedicine(updatedMedicine)
 
-            alarmScheduler.schedule(updatedMedicine)
+            notificationScheduler.scheduleReminders(updatedMedicine)
             true
         } catch (e: Exception) {
             false // Simple boolean return
