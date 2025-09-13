@@ -1,6 +1,7 @@
 package com.romit.medreminder
 
 import android.Manifest
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.pm.PackageManager
@@ -74,16 +75,21 @@ class MainActivity : ComponentActivity() {
         val channelId = "default_channel_id"
         val channelName = "Default"
         val channelDescription = "This is the default channel for app notifications."
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
 
         val channel = NotificationChannel(channelId, channelName, importance).apply {
             description = channelDescription
+            enableLights(true)
+            enableVibration(true)
+            setBypassDnd(true)
+            lockscreenVisibility = Notification.VISIBILITY_PUBLIC
         }
 
         // Register the channel with the system
         val notificationManager = NotificationManagerCompat.from(this)
         notificationManager.createNotificationChannel(channel)
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
