@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.romit.medreminder.data.local.entities.Medicine
 import com.romit.medreminder.data.repository.MedReminderRepository
+import com.romit.medreminder.notifications.local.AlarmScheduler
 import com.romit.medreminder.ui.DosageType
 import com.romit.medreminder.ui.MedicineUiState
 import com.romit.medreminder.ui.utils.SharedViewModelFunctions
@@ -18,7 +19,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @HiltViewModel
-class EditMedicineScreenViewModel @Inject constructor(private val medReminderRepository: MedReminderRepository) :
+class EditMedicineScreenViewModel @Inject constructor(private val medReminderRepository: MedReminderRepository, private val alarmScheduler: AlarmScheduler) :
     ViewModel(), SharedViewModelFunctions {
 
     private val _medicineUiState = MutableStateFlow(MedicineUiState())
@@ -54,6 +55,11 @@ class EditMedicineScreenViewModel @Inject constructor(private val medReminderRep
 
     suspend fun updateMedicine(medId: Long): Boolean {
         return try {
+
+            val oldMedicine = medReminderRepository.getMedicineById(medId)
+            if (oldMedicine != null) {
+                alarmScheduler.cancel(oldMedicine)
+            }
             val dosageAmount: Int = when (medicineUiState.value.dosage) {
                 DosageType.None -> 0
                 DosageType.OnceDaily -> 1
@@ -61,7 +67,7 @@ class EditMedicineScreenViewModel @Inject constructor(private val medReminderRep
                 DosageType.Custom -> medicineUiState.value.customDosage
             }
             val reminders = medicineUiState.value.reminders.joinToString(",")
-            val medicine = Medicine(
+            val updatedMedicine = Medicine(
                 medId = medId,
                 name = medicineUiState.value.medName,
                 dosage = dosageAmount,
@@ -69,7 +75,9 @@ class EditMedicineScreenViewModel @Inject constructor(private val medReminderRep
                 refillDays = medicineUiState.value.refillDays,
                 notes = medicineUiState.value.notes
             )
-            medReminderRepository.addMedicine(medicine)
+            medReminderRepository.addMedicine(updatedMedicine)
+
+            alarmScheduler.schedule(updatedMedicine)
             true
         } catch (e: Exception) {
             false // Simple boolean return

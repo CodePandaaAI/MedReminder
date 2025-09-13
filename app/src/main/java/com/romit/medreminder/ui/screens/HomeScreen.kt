@@ -1,5 +1,7 @@
 package com.romit.medreminder.ui.screens
 
+import android.Manifest
+import android.os.Build
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,9 +24,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -43,18 +46,34 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.romit.medreminder.R
 import com.romit.medreminder.data.local.entities.Medicine
 import com.romit.medreminder.ui.theme.background
 import com.romit.medreminder.ui.theme.foreground
 import com.romit.medreminder.ui.viewmodels.HomeScreenViewModel
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeScreenViewModel = hiltViewModel(),
     onAddMedicineClicked: () -> Unit,
     onMedicineClicked: (id: Long) -> Unit
 ) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val permissionState = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+
+        // If permission is not granted, show a special UI to request it.
+        if (!permissionState.status.isGranted) {
+            PermissionRequestUI(
+                onPermissionRequested = { permissionState.launchPermissionRequest() }
+            )
+            // Stop executing the rest of the composable.
+            return
+        }
+    }
     val medicines by viewModel.allMedicines.collectAsState()
 
     // High-Level Container
@@ -107,16 +126,6 @@ fun HomeScreen(
                     }
                     item { Spacer(modifier = Modifier.height(96.dp)) } // ✅ 80 -> 96
                 }
-            }
-
-            // FAB
-            FloatingActionButton(
-                onClick = onAddMedicineClicked,
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(20.dp) // ✅ 16 -> 20
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Medicine")
             }
         }
     }
@@ -263,10 +272,51 @@ private fun EmptyState(onAddMedicineClicked: () -> Unit) {
 
         Spacer(modifier = Modifier.height(38.dp)) // ✅ 32 -> 38
 
-        FloatingActionButton(
+        Button(
             onClick = onAddMedicineClicked
         ) {
             Icon(Icons.Default.Add, contentDescription = "Add Medicine")
+            Text("Add Medicine")
+        }
+    }
+}
+
+@Composable
+private fun PermissionRequestUI(onPermissionRequested: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(38.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.Notifications,
+            contentDescription = null,
+            modifier = Modifier.size(96.dp),
+            tint = MaterialTheme.colorScheme.primary
+        )
+
+        Spacer(modifier = Modifier.height(29.dp))
+
+        Text(
+            text = "Enable Notifications",
+            style = MaterialTheme.typography.titleLarge.copy(fontSize = 27.sp),
+            fontWeight = FontWeight.Medium
+        )
+
+        Text(
+            text = "MedReminder needs permission to send you timely notifications for your medications.",
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = 20.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 10.dp)
+        )
+
+        Spacer(modifier = Modifier.height(38.dp))
+
+        Button(onClick = onPermissionRequested) {
+            Text("Grant Permission")
         }
     }
 }

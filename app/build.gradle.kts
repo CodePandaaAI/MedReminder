@@ -48,6 +48,9 @@ android {
 }
 
 dependencies {
+    // Accompanist
+    implementation(libs.accompanist.permissions)
+
     // Serialization
     implementation(libs.kotlinx.serialization.json) // Use the latest stable version
     implementation(libs.kotlinx.serialization.core)

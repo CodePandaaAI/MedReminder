@@ -1,5 +1,10 @@
 package com.romit.medreminder
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -17,12 +22,17 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navigation
 import androidx.navigation.toRoute
@@ -38,6 +48,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        createNotificationChannel()
+        requestNotificationPermission()
         enableEdgeToEdge()
         setContent {
             MedReminderTheme {
@@ -45,21 +57,57 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    1
+                )
+            }
+        }
+    }
+    private fun createNotificationChannel() {
+        val channelId = "default_channel_id"
+        val channelName = "Default"
+        val channelDescription = "This is the default channel for app notifications."
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+
+        val channel = NotificationChannel(channelId, channelName, importance).apply {
+            description = channelDescription
+        }
+
+        // Register the channel with the system
+        val notificationManager = NotificationManagerCompat.from(this)
+        notificationManager.createNotificationChannel(channel)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
 
-    val title = when (navController.currentBackStackEntry?.toRoute<Screen>()) {
-        is Screen.Home -> "MedReminder"
-        is Screen.EditMedicineScreen -> "Edit Medicine" // Correctly handles EditMedicineScreen title
-        is Screen.AddMedicineDetailsScreenFlow, // Covers the flow itself if it were a direct destination
-        is Screen.AddMedicineDetailsScreen,
-        is Screen.AddMedicineDetailsScreenComplete -> "Add Medicine Details"
-        else -> "MedReminder" // Default title
+    val isHome = currentDestination?.route == Screen.Home::class.qualifiedName
+    val isEditMedicine = currentDestination?.route?.startsWith(Screen.EditMedicineScreen::class.qualifiedName.orEmpty()) == true
+    val isAddMedicineFlow = currentDestination?.route == Screen.AddMedicineDetailsScreenFlow::class.qualifiedName
+    val isAddMedicineDetails = currentDestination?.route == Screen.AddMedicineDetailsScreen::class.qualifiedName
+    val isAddMedicineComplete = currentDestination?.route == Screen.AddMedicineDetailsScreenComplete::class.qualifiedName
+
+    val title = when {
+        isHome -> "MedReminder"
+        isEditMedicine -> "Edit Medicine"
+        isAddMedicineFlow || isAddMedicineDetails || isAddMedicineComplete -> "Add Medicine Details"
+        else -> "MedReminder"
     }
+
+    // FAB visibility - only show on Home screen
+    val showFab = isHome
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
@@ -67,13 +115,13 @@ fun AppNavigation() {
             CenterAlignedTopAppBar(
                 title = { Text(title) },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    if (isSystemInDarkTheme()) Color(0xFF121212) else MaterialTheme.colorScheme.surfaceContainer
+                    if (isSystemInDarkTheme()) Color(0xFF121212)
+                    else MaterialTheme.colorScheme.surfaceContainer
                 )
             )
         },
         floatingActionButton = {
-            // Simplified FAB visibility using type-safe check
-            if (navController.currentBackStackEntry?.toRoute<Screen>() is Screen.Home) {
+            if (showFab) {
                 ExtendedFloatingActionButton(onClick = {
                     navController.navigate(Screen.AddMedicineDetailsScreenFlow)
                 }) {
@@ -85,16 +133,15 @@ fun AppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Home, // Assumes Screen.Home is a @Serializable object or data object
-            modifier = Modifier.padding(innerPadding) // Apply padding from Scaffold to NavHost
+            startDestination = Screen.Home,
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable<Screen.Home> {
                 HomeScreen(
-                    // Modifier.padding(innerPadding) is now handled by NavHost
                     onAddMedicineClicked = {
                         navController.navigate(Screen.AddMedicineDetailsScreenFlow)
                     },
-                    onMedicineClicked = { medicineId -> // medicineId is Long
+                    onMedicineClicked = { medicineId ->
                         navController.navigate(Screen.EditMedicineScreen(id = medicineId))
                     }
                 )
@@ -102,7 +149,6 @@ fun AppNavigation() {
 
             composable<Screen.EditMedicineScreen> { backStackEntry ->
                 val routeArgs = backStackEntry.toRoute<Screen.EditMedicineScreen>()
-                // EditMedicineScreen only needs the ID for now
                 EditMedicineScreen(
                     medId = routeArgs.id,
                     onCancelOrSuccess = {
@@ -125,7 +171,6 @@ fun AppNavigation() {
                         hiltViewModel(parentEntry)
 
                     AddMedicineDetailsScreen(
-                        // Modifier.padding(innerPadding) is now handled by NavHost
                         viewModel = addMedicineScreenViewModel,
                         onFillNextDetailClicked = {
                             navController.navigate(Screen.AddMedicineDetailsScreenComplete)
@@ -146,7 +191,6 @@ fun AppNavigation() {
                         hiltViewModel(parentEntry)
 
                     AddMedicineDetailsScreenComplete(
-                        // Modifier.padding(innerPadding) is now handled by NavHost
                         viewmodel = addMedicineScreenViewModel,
                         onNavigateBack = {
                             navController.popBackStack<Screen.Home>(

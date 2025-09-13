@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.romit.medreminder.data.local.dao.MedDao
 import com.romit.medreminder.data.local.entities.Medicine
 
-@Database(entities = [Medicine::class], exportSchema = false, version = 2)
+@Database(entities = [Medicine::class], exportSchema = false, version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun medDao(): MedDao
 
@@ -21,7 +21,7 @@ abstract class AppDatabase : RoomDatabase() {
                                 context.applicationContext,
                                 AppDatabase::class.java,
                                 "medicine_database"
-                            ).build()
+                            ).fallbackToDestructiveMigration(true).build()
                 INSTANCE = instance
                 instance
             }

@@ -3,6 +3,7 @@ package com.romit.medreminder.ui.viewmodels
 import androidx.lifecycle.ViewModel
 import com.romit.medreminder.data.local.entities.Medicine
 import com.romit.medreminder.data.repository.MedReminderRepository
+import com.romit.medreminder.notifications.local.AlarmScheduler
 import com.romit.medreminder.ui.DosageType
 import com.romit.medreminder.ui.MedicineUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +16,10 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @HiltViewModel
-class AddMedicineScreenViewModel @Inject constructor(private val medReminderRepository: MedReminderRepository) :
+class AddMedicineScreenViewModel @Inject constructor(
+    private val medReminderRepository: MedReminderRepository,
+    private val alarmScheduler: AlarmScheduler
+) :
     ViewModel() {
     private val _medicineUiState = MutableStateFlow(MedicineUiState())
 
@@ -37,7 +41,11 @@ class AddMedicineScreenViewModel @Inject constructor(private val medReminderRepo
                 refillDays = medicineUiState.value.refillDays,
                 notes = medicineUiState.value.notes
             )
-            medReminderRepository.addMedicine(medicine)
+            val newMedId = medReminderRepository.addMedicine(medicine)
+
+            val newMedicine = medicine.copy(medId = newMedId)
+
+            alarmScheduler.schedule(newMedicine)
             true
         } catch (e: Exception) {
             false // Simple boolean return

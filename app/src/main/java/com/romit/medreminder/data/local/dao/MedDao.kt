@@ -6,7 +6,6 @@ import androidx.room.Query
 import androidx.room.Upsert
 import com.romit.medreminder.data.local.entities.Medicine
 import kotlinx.coroutines.flow.Flow
-import javax.inject.Inject
 
 @Dao
 interface MedDao {
@@ -14,7 +13,7 @@ interface MedDao {
     fun getListOfAllMedicines(): Flow<List<Medicine>>
 
     @Upsert
-    suspend fun addMedicine(medicine: Medicine)
+    suspend fun addMedicine(medicine: Medicine): Long
 
     @Delete
     suspend fun deleteMedicine(medicine: Medicine)

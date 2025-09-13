@@ -13,7 +13,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @HiltViewModel
-class HomeScreenViewModel @Inject constructor(val medReminderRepository: MedReminderRepository): ViewModel() {
+class HomeScreenViewModel @Inject constructor(medReminderRepository: MedReminderRepository): ViewModel() {
     val allMedicines: StateFlow<List<Medicine>> = medReminderRepository.allMedicines.stateIn(
         viewModelScope, SharingStarted.Companion.WhileSubscribed(5000), emptyList())
 
