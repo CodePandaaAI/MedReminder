@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -281,6 +282,18 @@ fun EditMedicineScreen(
             ) {
                 Text("Save Changes")
             }
+        }
+        OutlinedButton(
+            onClick = {
+                val success = viewModel.deleteMedicine(medId)
+                if (success) onCancelOrSuccess()
+            },
+            contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(Icons.Default.Delete, null)
+            Spacer(Modifier.padding(ButtonDefaults.IconSize))
+            Text("Delete Medicine")
         }
 
         Spacer(modifier = Modifier.height(80.dp)) // Bottom padding

@@ -88,6 +88,18 @@ class EditMedicineScreenViewModel @Inject constructor(
 
     }
 
+    fun deleteMedicine(medId: Long): Boolean {
+        var success = false
+        viewModelScope.launch {
+            val medicine = medReminderRepository.getMedicineById(medId)
+            if(medicine != null) {
+                medReminderRepository.deleteMedicine(medicine)
+                success = true
+            }
+        }
+        return success
+    }
+
     override fun changeMedName(name: String) {
         _medicineUiState.update { medicineUiState ->
             medicineUiState.copy(medName = name)
