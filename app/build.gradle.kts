@@ -48,12 +48,16 @@ android {
 }
 
 dependencies {
+    // Accompanist
+    implementation(libs.accompanist.permissions)
+
     // Serialization
     implementation(libs.kotlinx.serialization.json) // Use the latest stable version
     implementation(libs.kotlinx.serialization.core)
 
     // hilt
     implementation(libs.hilt.android)
+    implementation(libs.androidx.work.runtime.ktx)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
