@@ -46,14 +46,14 @@ A streamlined multi-step process for entering complete medication details.
 
 | Medicine Details | Reminder Setup | Refill Information |
 |:----------------:|:--------------:|:------------------:|
-| <img width="240" alt="Medicine details" src="https://github.com/user-attachments/assets/17c82334-ce20-492e-8cfd-c79312350f99" /> | <img width="240" alt="Reminder times" src="https://github.com/user-attachments/assets/3d0176d8-ed94-42e0-b104-d80bb55b6f22" /> | <img width="240" alt="Refill setup" src="https://github.com/user-attachments/assets/150e1ea8-849a-4bb0-8b54-25e65d5de7cb" /> |
+| <img width="240" alt="Refill setup" src="https://github.com/user-attachments/assets/150e1ea8-849a-4bb0-8b54-25e65d5de7cb" /> | <img width="240" alt="Image" src="https://github.com/user-attachments/assets/e407fdef-12a4-40fe-845b-bf4b3020a963" /> | <img width="240"  alt="Image" src="https://github.com/user-attachments/assets/34044a14-b02c-402a-81a0-b7b295b28475" /> |
 
 ### Permission Management
 User-friendly guidance for enabling notification permissions.
 
 | Permission Request | Settings Guide |
 |:-----------------:|:---------------:|
-| <img width="240" alt="Permission request" src="https://github.com/user-attachments/assets/0ed72e4e-1ba7-42f4-8fd3-3d96cee05956" /> | <img width="240" alt="Settings guide" src="https://github.com/user-attachments/assets/bd3bbca5-4137-4bb2-871a-b5876b058e8f" /> |
+| <img width="240" alt="Medicine details" src="https://github.com/user-attachments/assets/17c82334-ce20-492e-8cfd-c79312350f99" /> | <img width="240" alt="Settings guide" src="https://github.com/user-attachments/assets/bd3bbca5-4137-4bb2-871a-b5876b058e8f" /> | <img width="240" alt="Permission request" src="https://github.com/user-attachments/assets/0ed72e4e-1ba7-42f4-8fd3-3d96cee05956" /> |
 
 ## 🚀 Getting Started
 
