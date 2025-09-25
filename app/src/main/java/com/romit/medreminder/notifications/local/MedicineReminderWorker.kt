@@ -23,7 +23,7 @@ class MedicineReminderWorker(
             val medicineId = inputData.getInt("MEDICINE_ID", 0)
 
             // Show notification
-            medicationNotification(applicationContext, medicineId, medicineName, dosageInfo)
+            createMedicationReminder(applicationContext, medicineId, medicineName, dosageInfo)
 
             // Schedule next day's reminder
             scheduleNextDayReminder()

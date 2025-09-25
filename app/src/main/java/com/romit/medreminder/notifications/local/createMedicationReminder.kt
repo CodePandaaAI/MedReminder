@@ -11,13 +11,13 @@ import androidx.core.app.NotificationManagerCompat
 import com.romit.medreminder.MainActivity
 import com.romit.medreminder.R
 
-fun medicationNotification(
+fun createMedicationReminder(
     context: Context,
     notificationId: Int,
     medicineName: String,
     dosageInfo: String
 ) {
-    val channelId = "default_channel_id" // Must match the channel created in MyApp
+    val channelId = "medicine_reminders_channel" // Must match the channel created in MyApp
 
     val mainActivityIntent = Intent(context, MainActivity::class.java).apply {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
