@@ -2,6 +2,7 @@ package com.romit.medreminder.ui.screens
 
 import android.Manifest
 import android.os.Build
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -39,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -63,7 +65,8 @@ fun HomeScreen(
     onMedicineClicked: (id: Long) -> Unit
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        val permissionState = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+        val permissionState =
+            rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
 
         // If permission is not granted, show a special UI to request it.
         if (!permissionState.status.isGranted) {
@@ -143,7 +146,7 @@ private fun MedicineCard(
         medicine.refillDays > 3 -> Color(0xFFFB8C00)
         else -> MaterialTheme.colorScheme.error
     }
-
+    val context = LocalContext.current
     // Card with All details
     Card(
         modifier = Modifier
@@ -182,7 +185,7 @@ private fun MedicineCard(
 
                 Column(horizontalAlignment = Alignment.End, modifier = Modifier) {
                     Text(
-                        text = "${medicine.refillDays}",
+                        text = "${viewModel.calculateRefillDaysRemaining(medicine)}",
                         style = MaterialTheme.typography.titleLarge, // ✅ Increased text size
                         fontWeight = FontWeight.Bold,
                         color = refillColor
@@ -231,6 +234,20 @@ private fun MedicineCard(
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 24.sp
                 )
+            }
+            Button(
+                onClick = {
+                    viewModel.onRefillButtonClicked(medicine)
+                    Toast.makeText(
+                        context,
+                        "Updated Refill Reminder Time",
+                        Toast.LENGTH_LONG
+                    ).show()
+                },
+                shape = RoundedCornerShape(24.dp),
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("I Refilled Medicine")
             }
         }
     }

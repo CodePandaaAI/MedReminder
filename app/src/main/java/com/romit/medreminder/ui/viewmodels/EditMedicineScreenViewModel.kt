@@ -76,9 +76,10 @@ class EditMedicineScreenViewModel @Inject constructor(
                 dosage = dosageAmount,
                 reminders = reminders,
                 refillDays = medicineUiState.value.refillDays,
+                lastRefillDateMillis = oldMedicine!!.lastRefillDateMillis,
                 notes = medicineUiState.value.notes
             )
-            medReminderRepository.addMedicine(updatedMedicine)
+            medReminderRepository.upsertMedicine(updatedMedicine)
 
             notificationScheduler.scheduleReminders(updatedMedicine)
             true
