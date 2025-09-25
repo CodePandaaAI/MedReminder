@@ -88,16 +88,14 @@ class EditMedicineScreenViewModel @Inject constructor(
 
     }
 
-    fun deleteMedicine(medId: Long): Boolean {
-        var success = false
+    fun deleteMedicine(medId: Long) {
         viewModelScope.launch {
             val medicine = medReminderRepository.getMedicineById(medId)
-            if(medicine != null) {
+            if (medicine != null) {
                 medReminderRepository.deleteMedicine(medicine)
-                success = true
+                notificationScheduler.cancelReminders(medicine)
             }
         }
-        return success
     }
 
     override fun changeMedName(name: String) {

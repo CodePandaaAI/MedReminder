@@ -285,8 +285,8 @@ fun EditMedicineScreen(
         }
         OutlinedButton(
             onClick = {
-                val success = viewModel.deleteMedicine(medId)
-                if (success) onCancelOrSuccess()
+                viewModel.deleteMedicine(medId)
+                onCancelOrSuccess()
             },
             contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
             modifier = Modifier.fillMaxWidth()
