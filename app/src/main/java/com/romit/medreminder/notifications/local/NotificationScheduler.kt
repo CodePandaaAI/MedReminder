@@ -19,7 +19,7 @@ interface NotificationScheduler {
 }
 
 
-class WorkManagerNotificationScheduler @Inject constructor(@param:ApplicationContext private val context: Context) : NotificationScheduler {
+class NotificationSchedulerImpl @Inject constructor(@param:ApplicationContext private val context: Context) : NotificationScheduler {
 
     override fun scheduleReminders(medicine: Medicine) {
         val reminders = medicine.reminders.split(",").filter { it.isNotBlank() }

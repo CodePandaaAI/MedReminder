@@ -72,9 +72,9 @@ class MainActivity : ComponentActivity() {
         }
     }
     private fun createNotificationChannel() {
-        val channelId = "default_channel_id"
-        val channelName = "Default"
-        val channelDescription = "This is the default channel for app notifications."
+        val channelId = "medicine_reminders_channel"
+        val channelName = "Medication Reminders"
+        val channelDescription = "This channel push medication reminder notifications"
         val importance = NotificationManager.IMPORTANCE_HIGH
 
         val channel = NotificationChannel(channelId, channelName, importance).apply {

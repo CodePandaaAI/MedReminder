@@ -1,7 +1,7 @@
 package com.romit.medreminder.di.modules
 
 import com.romit.medreminder.notifications.local.NotificationScheduler
-import com.romit.medreminder.notifications.local.WorkManagerNotificationScheduler
+import com.romit.medreminder.notifications.local.NotificationSchedulerImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -15,6 +15,6 @@ abstract class NotificationSchedulerModule {
     @Binds
     @Singleton
     abstract fun bindNotificationScheduler(
-        workManagerScheduler: WorkManagerNotificationScheduler
+        workManagerScheduler: NotificationSchedulerImpl
     ): NotificationScheduler
 }

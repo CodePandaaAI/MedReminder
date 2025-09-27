@@ -39,9 +39,10 @@ class AddMedicineScreenViewModel @Inject constructor(
                 dosage = dosageAmount,
                 reminders = reminders,
                 refillDays = medicineUiState.value.refillDays,
+                lastRefillDateMillis = System.currentTimeMillis(),
                 notes = medicineUiState.value.notes
             )
-            val newMedId = medReminderRepository.addMedicine(medicine)
+            val newMedId = medReminderRepository.upsertMedicine(medicine)
 
             val newMedicine = medicine.copy(medId = newMedId)
 

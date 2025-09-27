@@ -13,7 +13,7 @@ interface MedDao {
     fun getListOfAllMedicines(): Flow<List<Medicine>>
 
     @Upsert
-    suspend fun addMedicine(medicine: Medicine): Long
+    suspend fun upsertMedicine(medicine: Medicine): Long
 
     @Delete
     suspend fun deleteMedicine(medicine: Medicine)
