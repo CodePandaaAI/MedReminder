@@ -25,7 +25,7 @@
   - *Navigation Compose* - Type-safe navigation
   - *ViewModel* - Lifecycle-aware UI data management
   - *Room Database* - Local data persistence
-  - *WorkManager* - Background task scheduling *(assumed for notifications)*
+  - *WorkManager* - Background task scheduling for reliable notifications
   - *Lifecycle Components* - Lifecycle management
 - **Hilt** - Dependency injection framework
 - **Coroutines & Flow** - Asynchronous programming and reactive streams
@@ -60,6 +60,8 @@ User-friendly guidance for enabling notification permissions.
 ### Installation
 
 1. **Clone the repository**
+- git clone https://github.com/CodePandaaAI/medreminder.git
+
 2. **Open in Android Studio**
 - Launch Android Studio
 - Select "Open an Existing Project"
@@ -74,19 +76,46 @@ User-friendly guidance for enabling notification permissions.
 
 - **☁️ Backup & Sync** - Cloud backup and restore functionality
 - **📊 History Tracking** - Medication adherence history and analytics  
-- **😴 Smart Snooze** - Intelligent snooze options for reminders
 - **👥 Family Sharing** - Manage medications for family members
-- **🏥 Healthcare Integration** - Connect with healthcare providers
+
+## 📜 License
+
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+
+This project is licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0).
+
+### What This Means:
+
+✅ **You can:**
+- View and study the source code
+- Use the app for personal purposes
+- Modify and improve the code
+- Distribute modified versions
+
+❌ **But you must:**
+- Keep the same AGPL-3.0 license
+- Share your source code publicly if you distribute the app
+- Provide attribution to the original author
+- Make your modifications available to users (even if running as a service)
+
+📄 **Full license:** See [LICENSE](LICENSE) file or visit [GNU AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.en.html)
+
+### For Commercial Use:
+If you're interested in using this code under different terms, please contact: **romitsharmakv@gmail.com**
 
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+By contributing to this project, you agree that your contributions will be licensed under the same AGPL-3.0 license.
 
 ---
 
 <div align="center">
 
 **Made with ❤️ and ☕ for better health management**
+
+Copyright © 2025 [Romit Sharma]
 
 ⭐ *If this project helps you, please consider giving it a star!*
 
